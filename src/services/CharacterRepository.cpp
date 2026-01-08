@@ -65,7 +65,12 @@ core::Character CharacterRepository::parseCharacter(const QJsonObject& json)
     character.name = json["name"].toString().toStdString();
     character.status = json["status"].toString().toStdString();
     character.species = json["species"].toString().toStdString();
+    character.type = json["type"].toString().toStdString();
+    character.gender = json["gender"].toString().toStdString();
+    character.origin = json["origin"].toObject()["name"].toString().toStdString();
+    character.location = json["location"].toObject()["name"].toString().toStdString();
     character.imageUrl = json["image"].toString().toStdString();
+    character.episodeCount = json["episode"].toArray().size();
     return character;
 }
 

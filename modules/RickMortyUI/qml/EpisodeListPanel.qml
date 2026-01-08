@@ -8,6 +8,7 @@ Rectangle {
     property int viewState: 0  // 0=Idle, 1=Loading, 2=Success, 3=Error
 
     signal itemClicked(int index)
+    signal menuClicked()
 
     color: Theme.surface
     radius: Theme.borderRadius
@@ -21,9 +22,19 @@ Rectangle {
             spacing: Theme.spacingMedium
 
             Text {
+                id: menuIcon
                 text: "\u2630"
-                color: Theme.textSecondary
+                color: menuMouseArea.containsMouse ? Theme.accent : Theme.textSecondary
                 font.pixelSize: Theme.fontSizeLarge
+
+                MouseArea {
+                    id: menuMouseArea
+                    anchors.fill: parent
+                    anchors.margins: -Theme.spacingSmall
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.menuClicked()
+                }
             }
 
             Text {

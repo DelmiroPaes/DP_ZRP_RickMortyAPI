@@ -6,14 +6,31 @@ Item {
     property string imageUrl: ""
     property string name: ""
     property string initial: ""
+    property bool selected: false
+
+    signal clicked()
 
     implicitWidth: Theme.characterCardWidth
     implicitHeight: Theme.characterCardHeight
 
     Rectangle {
         anchors.fill: parent
-        color: Theme.surface
+        color: cardMouseArea.containsMouse ? Theme.surfaceLight : Theme.surface
         radius: Theme.borderRadius
+        border.width: root.selected ? 2 : 0
+        border.color: Theme.accent
+
+        Behavior on color {
+            ColorAnimation { duration: 150 }
+        }
+
+        MouseArea {
+            id: cardMouseArea
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.clicked()
+        }
 
         Column {
             anchors.fill: parent

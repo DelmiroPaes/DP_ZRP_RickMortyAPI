@@ -15,44 +15,113 @@ Item {
     readonly property int stateSuccess: 2
     readonly property int stateError: 3
 
+    // Panel visibility state
+    property bool panelVisible: true
+
     signal episodeSelected(int index)
 
-    RowLayout {
+    Row {
         anchors.fill: parent
         spacing: Theme.spacingLarge
 
-        EpisodeListPanel {
-            Layout.preferredWidth: Theme.episodePanelWidth
-            Layout.fillHeight: true
-            model: root.episodeListViewModel
-            viewState: root.episodeListViewModel ? root.episodeListViewModel.state : root.stateIdle
-            selectedIndex: root.episodeListViewModel ? root.episodeListViewModel.selectedIndex : -1
+        // Episode list panel container with slide animation
+        Item {
+            id: panelContainer
+            width: root.panelVisible ? Theme.episodePanelWidth : 0
+            height: parent.height
+            clip: true
 
-            onItemClicked: function(index) {
-                root.episodeSelected(index)
+            Behavior on width {
+                NumberAnimation {
+                    duration: 250
+                    easing.type: Easing.InOutQuad
+                }
+            }
+
+            EpisodeListPanel {
+                id: episodeListPanel
+                width: Theme.episodePanelWidth
+                height: parent.height
+                x: root.panelVisible ? 0 : -width
+                model: root.episodeListViewModel
+                viewState: root.episodeListViewModel ? root.episodeListViewModel.state : root.stateIdle
+                selectedIndex: root.episodeListViewModel ? root.episodeListViewModel.selectedIndex : -1
+
+                Behavior on x {
+                    NumberAnimation {
+                        duration: 250
+                        easing.type: Easing.InOutQuad
+                    }
+                }
+
+                onItemClicked: function(index) {
+                    root.episodeSelected(index)
+                }
+
+                onMenuClicked: {
+                    root.panelVisible = !root.panelVisible
+                }
             }
         }
 
-        EpisodeDetailPanel {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            viewModel: root.episodeDetailViewModel
-            castViewModel: root.characterListViewModel
-            visible: root.episodeDetailViewModel && root.episodeDetailViewModel.hasEpisode
-        }
-
-        // Empty state placeholder
+        // Detail area
         Item {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            visible: !root.episodeDetailViewModel || !root.episodeDetailViewModel.hasEpisode
+            width: parent.width - panelContainer.width - parent.spacing
+            height: parent.height
 
+            EpisodeDetailPanel {
+                anchors.fill: parent
+                viewModel: root.episodeDetailViewModel
+                castViewModel: root.characterListViewModel
+                visible: root.episodeDetailViewModel && root.episodeDetailViewModel.hasEpisode
+            }
+
+            // Empty state placeholder
             Text {
                 anchors.centerIn: parent
                 text: qsTr("Select an episode to view details")
                 color: Theme.textSecondary
                 font.pixelSize: Theme.fontSizeLarge
+                visible: !root.episodeDetailViewModel || !root.episodeDetailViewModel.hasEpisode
             }
+        }
+    }
+
+    // Toggle button - fixed position at top left (same as menu icon in EpisodeListPanel)
+    Rectangle {
+        id: toggleButton
+        x: Theme.spacingLarge
+        y: Theme.spacingLarge
+        width: 30
+        height: 30
+        radius: Theme.borderRadiusSmall
+        color: toggleMouseArea.containsMouse ? Theme.surfaceLight : Theme.surface
+        visible: !root.panelVisible
+        opacity: visible ? 1 : 0
+        scale: visible ? 1 : 0.8
+
+        Behavior on opacity {
+            NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+        }
+
+        Behavior on scale {
+            NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+        }
+
+        Text {
+            anchors.centerIn: parent
+            text: "\u2630"
+            color: toggleMouseArea.containsMouse ? Theme.accent : Theme.textSecondary
+            font.pixelSize: Theme.fontSizeLarge
+        }
+
+        MouseArea {
+            id: toggleMouseArea
+            anchors.fill: parent
+            anchors.margins: -Theme.spacingSmall
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.panelVisible = true
         }
     }
 }

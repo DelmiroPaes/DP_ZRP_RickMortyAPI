@@ -5,6 +5,9 @@ Item {
 
     property var model: null
     property int viewState: 0  // 0=Idle, 1=Loading, 2=Success, 3=Error
+    property int selectedIndex: -1
+
+    signal characterClicked(int index)
 
     Column {
         anchors.fill: parent
@@ -36,6 +39,11 @@ Item {
                     imageUrl: model.image || ""
                     name: model.name || ""
                     initial: model.initial || ""
+                    selected: root.selectedIndex === model.index
+
+                    onClicked: {
+                        root.characterClicked(model.index)
+                    }
                 }
             }
 

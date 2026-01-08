@@ -35,10 +35,20 @@ QVariant CharacterListViewModel::data(const QModelIndex& index, int role) const
         return QString::fromStdString(character.status);
     case SpeciesRole:
         return QString::fromStdString(character.species);
+    case TypeRole:
+        return QString::fromStdString(character.type);
+    case GenderRole:
+        return QString::fromStdString(character.gender);
+    case OriginRole:
+        return QString::fromStdString(character.origin);
+    case LocationRole:
+        return QString::fromStdString(character.location);
     case ImageRole:
         return QString::fromStdString(character.imageUrl);
     case InitialRole:
         return QString::fromStdString(character.initial());
+    case EpisodeCountRole:
+        return character.episodeCount;
     default:
         return {};
     }
@@ -51,8 +61,13 @@ QHash<int, QByteArray> CharacterListViewModel::roleNames() const
         {NameRole, "name"},
         {StatusRole, "status"},
         {SpeciesRole, "species"},
+        {TypeRole, "type"},
+        {GenderRole, "gender"},
+        {OriginRole, "origin"},
+        {LocationRole, "location"},
         {ImageRole, "image"},
-        {InitialRole, "initial"}
+        {InitialRole, "initial"},
+        {EpisodeCountRole, "episodeCount"}
     };
 }
 
@@ -64,6 +79,7 @@ void CharacterListViewModel::loadCharacters(const std::vector<int>& ids)
     }
 
     setState(ViewState::Loading);
+    clearSelection();
 
     m_repository->fetchCharacters(ids, [this](core::CharacterResult result) {
         // Ensure UI updates happen on the main thread
@@ -84,6 +100,8 @@ void CharacterListViewModel::loadCharacters(const std::vector<int>& ids)
 
 void CharacterListViewModel::clear()
 {
+    clearSelection();
+
     if (m_characters.empty()) {
         return;
     }
@@ -93,6 +111,82 @@ void CharacterListViewModel::clear()
     endResetModel();
     emit countChanged();
     setState(ViewState::Idle);
+}
+
+void CharacterListViewModel::setSelectedIndex(int index)
+{
+    if (m_selectedIndex == index) {
+        return;
+    }
+    m_selectedIndex = index;
+    emit selectedIndexChanged();
+}
+
+void CharacterListViewModel::clearSelection()
+{
+    setSelectedIndex(-1);
+}
+
+const core::Character* CharacterListViewModel::selectedCharacter() const
+{
+    if (m_selectedIndex >= 0 && m_selectedIndex < static_cast<int>(m_characters.size())) {
+        return &m_characters[static_cast<size_t>(m_selectedIndex)];
+    }
+    return nullptr;
+}
+
+QString CharacterListViewModel::selectedName() const
+{
+    const auto* ch = selectedCharacter();
+    return ch ? QString::fromStdString(ch->name) : QString();
+}
+
+QString CharacterListViewModel::selectedStatus() const
+{
+    const auto* ch = selectedCharacter();
+    return ch ? QString::fromStdString(ch->status) : QString();
+}
+
+QString CharacterListViewModel::selectedSpecies() const
+{
+    const auto* ch = selectedCharacter();
+    return ch ? QString::fromStdString(ch->species) : QString();
+}
+
+QString CharacterListViewModel::selectedType() const
+{
+    const auto* ch = selectedCharacter();
+    return ch ? QString::fromStdString(ch->type) : QString();
+}
+
+QString CharacterListViewModel::selectedGender() const
+{
+    const auto* ch = selectedCharacter();
+    return ch ? QString::fromStdString(ch->gender) : QString();
+}
+
+QString CharacterListViewModel::selectedOrigin() const
+{
+    const auto* ch = selectedCharacter();
+    return ch ? QString::fromStdString(ch->origin) : QString();
+}
+
+QString CharacterListViewModel::selectedLocation() const
+{
+    const auto* ch = selectedCharacter();
+    return ch ? QString::fromStdString(ch->location) : QString();
+}
+
+QString CharacterListViewModel::selectedImageUrl() const
+{
+    const auto* ch = selectedCharacter();
+    return ch ? QString::fromStdString(ch->imageUrl) : QString();
+}
+
+int CharacterListViewModel::selectedEpisodeCount() const
+{
+    const auto* ch = selectedCharacter();
+    return ch ? ch->episodeCount : 0;
 }
 
 void CharacterListViewModel::setState(ViewState::State state)

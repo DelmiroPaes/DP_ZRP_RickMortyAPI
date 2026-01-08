@@ -9,11 +9,13 @@ Column {
     spacing: Theme.spacingSmall
 
     Text {
+        width: root.width
         text: root.title
         color: Theme.accentLight
         font.pixelSize: Theme.fontSizeHeader
         font.bold: true
         font.italic: true
+        elide: Text.ElideRight
     }
 
     Text {
