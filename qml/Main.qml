@@ -7,4 +7,3 @@ Window
     visible: true
     title: qsTr("Rick and Morty API (ZRP Test Project)")
 }
-3
