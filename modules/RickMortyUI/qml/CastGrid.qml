@@ -4,7 +4,7 @@ Item {
     id: root
 
     property var model: null
-    property bool isLoading: false
+    property int viewState: 0  // 0=Idle, 1=Loading, 2=Success, 3=Error
 
     Column {
         anchors.fill: parent
@@ -28,22 +28,43 @@ Item {
                 cellWidth: Theme.characterCardWidth + Theme.spacingMedium
                 cellHeight: Theme.characterCardHeight + Theme.spacingMedium
                 clip: true
-                visible: !root.isLoading && root.model && root.model.count > 0
+                visible: root.viewState === 2 && root.model && root.model.count > 0  // Success
 
                 delegate: CharacterCard {
                     width: Theme.characterCardWidth
                     height: Theme.characterCardHeight
                     imageUrl: model.image || ""
                     name: model.name || ""
+                    initial: model.initial || ""
                 }
             }
 
+            // Loading state
             Text {
                 anchors.centerIn: parent
-                text: root.isLoading ? qsTr("Loading cast...") : qsTr("No cast information")
+                text: qsTr("Loading cast...")
                 color: Theme.textSecondary
                 font.pixelSize: Theme.fontSizeMedium
-                visible: root.isLoading || !root.model || root.model.count === 0
+                visible: root.viewState === 1  // Loading
+            }
+
+            // Error state
+            Text {
+                anchors.centerIn: parent
+                text: qsTr("Failed to load cast")
+                color: Theme.textSecondary
+                font.pixelSize: Theme.fontSizeMedium
+                visible: root.viewState === 3  // Error
+            }
+
+            // Empty/Idle state
+            Text {
+                anchors.centerIn: parent
+                text: qsTr("No cast information")
+                color: Theme.textSecondary
+                font.pixelSize: Theme.fontSizeMedium
+                visible: (root.viewState === 0 || root.viewState === 2)
+                         && (!root.model || root.model.count === 0)
             }
         }
     }

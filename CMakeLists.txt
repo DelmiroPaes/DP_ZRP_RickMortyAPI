@@ -9,11 +9,12 @@ find_package(Qt6 REQUIRED COMPONENTS Quick Network)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
-# Add the portable UI module
+# Add layers in dependency order
+add_subdirectory(src/core)
+add_subdirectory(src/services)
+add_subdirectory(src/viewmodels)
+# RickMortyUI must come after ViewModels since QML imports RickMortyViewModels
 add_subdirectory(modules/RickMortyUI)
-
-# Add the data layer
-add_subdirectory(data)
 
 qt_add_executable(appRickMortyAPI
     src/main.cpp
@@ -36,9 +37,39 @@ target_link_libraries(appRickMortyAPI
     PRIVATE
         Qt6::Quick
         Qt6::Network
+        RickMortyCore
+        RickMortyServices
+        RickMortyViewModelsplugin
         RickMortyUIplugin
-        RickMortyData
 )
+
+target_include_directories(appRickMortyAPI PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+# Deploy Qt dependencies to build directory after build
+if(WIN32)
+    # Find windeployqt executable
+    get_target_property(_qmake_executable Qt6::qmake IMPORTED_LOCATION)
+    get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+    find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
+
+    if(WINDEPLOYQT_EXECUTABLE)
+        add_custom_command(TARGET appRickMortyAPI POST_BUILD
+            COMMAND "${WINDEPLOYQT_EXECUTABLE}"
+                --no-translations
+                --no-system-d3d-compiler
+                --no-opengl-sw
+                --qmldir "${CMAKE_CURRENT_SOURCE_DIR}/qml"
+                --qmldir "${CMAKE_CURRENT_SOURCE_DIR}/modules/RickMortyUI/qml"
+                "$<TARGET_FILE:appRickMortyAPI>"
+            COMMENT "Deploying Qt dependencies..."
+            VERBATIM
+        )
+    else()
+        message(WARNING "windeployqt not found, Qt DLLs will not be copied automatically")
+    endif()
+endif()
 
 include(GNUInstallDirs)
 install(TARGETS appRickMortyAPI

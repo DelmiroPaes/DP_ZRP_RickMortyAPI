@@ -4,8 +4,7 @@ Column {
     id: root
 
     property string title: ""
-    property int season: 0
-    property int episodeNumber: 0
+    property string formattedSeason: ""
 
     spacing: Theme.spacingSmall
 
@@ -18,7 +17,7 @@ Column {
     }
 
     Text {
-        text: "Season %1, Episode %2".arg(root.season).arg(root.episodeNumber)
+        text: root.formattedSeason
         color: Theme.textSecondary
         font.pixelSize: Theme.fontSizeLarge
     }

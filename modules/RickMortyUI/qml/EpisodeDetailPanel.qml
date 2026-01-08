@@ -4,9 +4,9 @@ import QtQuick.Layouts
 Item {
     id: root
 
-    property var episode: null
-    property var castModel: null
-    property bool isLoadingCast: false
+    // ViewModel references
+    property var viewModel: null
+    property var castViewModel: null
 
     ColumnLayout {
         anchors.fill: parent
@@ -18,9 +18,8 @@ Item {
 
             EpisodeHeader {
                 id: header
-                title: root.episode ? root.episode.name : ""
-                season: root.episode ? root.episode.season : 0
-                episodeNumber: root.episode ? root.episode.episodeNumber : 0
+                title: root.viewModel ? root.viewModel.name : ""
+                formattedSeason: root.viewModel ? root.viewModel.formattedSeason : ""
             }
 
             Item { Layout.fillWidth: true }
@@ -30,12 +29,12 @@ Item {
                 height: 200
                 radius: Theme.borderRadius
                 color: Theme.surfaceLight
-                visible: root.episode !== null
+                visible: root.viewModel && root.viewModel.hasEpisode
 
                 Image {
                     anchors.fill: parent
                     anchors.margins: Theme.spacingMedium
-                    source: root.episode ? root.episode.image : ""
+                    source: root.viewModel ? root.viewModel.imageUrl : ""
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
                 }
@@ -45,8 +44,8 @@ Item {
         CastGrid {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            model: root.castModel
-            isLoading: root.isLoadingCast
+            model: root.castViewModel
+            viewState: root.castViewModel ? root.castViewModel.state : 0
         }
     }
 }

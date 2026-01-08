@@ -9,20 +9,18 @@ Window {
     minimumHeight: 600
     visible: true
     title: qsTr("Rick and Morty Episode Browser")
-    color: "#1a1a2e"  // Theme.background
+    color: "#1a1a2e"
 
     EpisodeBrowser {
         anchors.fill: parent
         anchors.margins: 16
 
-        episodesModel: dataController.episodes
-        charactersModel: dataController.characters
-        selectedEpisode: dataController.selectedEpisode
-        isLoadingEpisodes: dataController.isLoadingEpisodes
-        isLoadingCharacters: dataController.isLoadingCharacters
+        episodeListViewModel: $episodeListVM
+        episodeDetailViewModel: $episodeDetailVM
+        characterListViewModel: $characterListVM
 
         onEpisodeSelected: function(index) {
-            dataController.selectEpisode(index)
+            $episodeListVM.selectedIndex = index
         }
     }
 }

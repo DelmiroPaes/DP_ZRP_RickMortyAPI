@@ -5,6 +5,7 @@ Item {
 
     property string imageUrl: ""
     property string name: ""
+    property string initial: ""
 
     implicitWidth: Theme.characterCardWidth
     implicitHeight: Theme.characterCardHeight
@@ -35,18 +36,12 @@ Item {
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
                     visible: status === Image.Ready
-
-                    onStatusChanged: {
-                        if (status === Image.Error) {
-                            placeholderText.visible = true
-                        }
-                    }
                 }
 
                 Text {
                     id: placeholderText
                     anchors.centerIn: parent
-                    text: root.name.charAt(0).toUpperCase()
+                    text: root.initial
                     font.pixelSize: Theme.fontSizeHeader
                     font.bold: true
                     color: Theme.textSecondary

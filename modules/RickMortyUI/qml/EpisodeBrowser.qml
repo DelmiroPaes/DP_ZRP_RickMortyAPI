@@ -4,11 +4,16 @@ import QtQuick.Layouts
 Item {
     id: root
 
-    property var episodesModel: null
-    property var charactersModel: null
-    property var selectedEpisode: null
-    property bool isLoadingEpisodes: false
-    property bool isLoadingCharacters: false
+    // ViewModel references (any QAbstractListModel or compatible object)
+    property var episodeListViewModel: null
+    property var episodeDetailViewModel: null
+    property var characterListViewModel: null
+
+    // State constants (matching ViewState enum)
+    readonly property int stateIdle: 0
+    readonly property int stateLoading: 1
+    readonly property int stateSuccess: 2
+    readonly property int stateError: 3
 
     signal episodeSelected(int index)
 
@@ -19,9 +24,9 @@ Item {
         EpisodeListPanel {
             Layout.preferredWidth: Theme.episodePanelWidth
             Layout.fillHeight: true
-            model: root.episodesModel
-            isLoading: root.isLoadingEpisodes
-            selectedIndex: root.selectedEpisode ? root.selectedEpisode.index : -1
+            model: root.episodeListViewModel
+            viewState: root.episodeListViewModel ? root.episodeListViewModel.state : root.stateIdle
+            selectedIndex: root.episodeListViewModel ? root.episodeListViewModel.selectedIndex : -1
 
             onItemClicked: function(index) {
                 root.episodeSelected(index)
@@ -31,16 +36,16 @@ Item {
         EpisodeDetailPanel {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            episode: root.selectedEpisode
-            castModel: root.charactersModel
-            isLoadingCast: root.isLoadingCharacters
-            visible: root.selectedEpisode && root.selectedEpisode.id !== undefined
+            viewModel: root.episodeDetailViewModel
+            castViewModel: root.characterListViewModel
+            visible: root.episodeDetailViewModel && root.episodeDetailViewModel.hasEpisode
         }
 
+        // Empty state placeholder
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            visible: !root.selectedEpisode || root.selectedEpisode.id === undefined
+            visible: !root.episodeDetailViewModel || !root.episodeDetailViewModel.hasEpisode
 
             Text {
                 anchors.centerIn: parent
