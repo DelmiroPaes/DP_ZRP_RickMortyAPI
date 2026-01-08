@@ -17,6 +17,7 @@ void ApiService::get(const QString& endpoint, JsonCallback callback)
     const QString url = QString(BASE_URL) + endpoint;
     QNetworkRequest request{QUrl(url)};
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setTransferTimeout(5000);  // 5 seconds timeout
 
     QNetworkReply* reply = m_networkManager.get(request);
 

@@ -35,9 +35,64 @@ Item {
                     source: root.imageUrl
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
+                    cache: true
+                    sourceSize.width: Theme.avatarSize * 2
+                    sourceSize.height: Theme.avatarSize * 2
                     visible: status === Image.Ready
                 }
 
+                // Loading spinner
+                Item {
+                    id: loadingSpinner
+                    anchors.centerIn: parent
+                    width: 32
+                    height: 32
+                    visible: avatarImage.status === Image.Loading
+
+                    Rectangle {
+                        id: spinnerRing
+                        anchors.fill: parent
+                        radius: width / 2
+                        color: "transparent"
+                        border.width: 3
+                        border.color: Theme.surfaceLight
+
+                        Rectangle {
+                            width: parent.width
+                            height: parent.height
+                            radius: width / 2
+                            color: "transparent"
+                            border.width: 3
+                            border.color: Theme.accent
+                            visible: false
+
+                            layer.enabled: true
+                            layer.effect: Item {}
+                        }
+
+                        // Animated arc indicator
+                        Rectangle {
+                            id: spinnerArc
+                            width: 8
+                            height: 8
+                            radius: 4
+                            color: Theme.accent
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.top: parent.top
+                            anchors.topMargin: -1
+                        }
+
+                        RotationAnimation on rotation {
+                            from: 0
+                            to: 360
+                            duration: 1000
+                            loops: Animation.Infinite
+                            running: loadingSpinner.visible
+                        }
+                    }
+                }
+
+                // Placeholder with initial (shown on error or empty URL)
                 Text {
                     id: placeholderText
                     anchors.centerIn: parent
@@ -45,7 +100,9 @@ Item {
                     font.pixelSize: Theme.fontSizeHeader
                     font.bold: true
                     color: Theme.textSecondary
-                    visible: avatarImage.status !== Image.Ready
+                    visible: avatarImage.status === Image.Error ||
+                             avatarImage.status === Image.Null ||
+                             root.imageUrl === ""
                 }
             }
 
