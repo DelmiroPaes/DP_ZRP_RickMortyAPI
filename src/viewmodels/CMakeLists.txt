@@ -18,7 +18,9 @@ target_link_libraries(RickMortyViewModels
     PUBLIC
         Qt6::Core
         Qt6::Qml
+        Qt6::Quick
         RickMortyCore
+        RickMortyServices
 )
 
 target_include_directories(RickMortyViewModels PUBLIC

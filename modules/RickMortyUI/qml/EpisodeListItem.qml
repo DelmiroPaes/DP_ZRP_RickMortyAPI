@@ -3,7 +3,8 @@ import QtQuick
 Rectangle {
     id: root
 
-    property string thumbnailUrl: ""
+    property string thumbnailUrl1: ""
+    property string thumbnailUrl2: ""
     property string title: ""
     property string episodeCode: ""
     property bool isSelected: false
@@ -34,12 +35,29 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 clip: true
 
-                Image {
+                Row {
                     anchors.fill: parent
-                    source: root.thumbnailUrl
-                    fillMode: Image.PreserveAspectCrop
-                    asynchronous: true
-                    visible: status === Image.Ready
+
+                    Image {
+                        id: thumb1
+                        width: parent.width / 2
+                        height: parent.height
+                        source: root.thumbnailUrl1
+                        fillMode: Image.PreserveAspectCrop
+                        asynchronous: true
+                        cache: true
+                    }
+
+                    Image {
+                        id: thumb2
+                        width: parent.width / 2
+                        height: parent.height
+                        source: root.thumbnailUrl2
+                        fillMode: Image.PreserveAspectCrop
+                        asynchronous: true
+                        cache: true
+                        mirror: root.thumbnailUrl1 === root.thumbnailUrl2
+                    }
                 }
 
                 Text {
@@ -48,7 +66,7 @@ Rectangle {
                     font.pixelSize: Theme.fontSizeSmall
                     font.bold: true
                     color: Theme.textSecondary
-                    visible: parent.children[0].status !== Image.Ready
+                    visible: thumb1.status !== Image.Ready && thumb2.status !== Image.Ready
                 }
             }
 

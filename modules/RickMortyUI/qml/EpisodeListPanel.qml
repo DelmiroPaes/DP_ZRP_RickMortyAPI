@@ -60,7 +60,8 @@ Rectangle {
 
                 delegate: EpisodeListItem {
                     width: listView.width
-                    thumbnailUrl: model.image || ""
+                    thumbnailUrl1: model.thumbnailUrl1 || ""
+                    thumbnailUrl2: model.thumbnailUrl2 || ""
                     title: model.name || ""
                     episodeCode: model.episodeCode || ""
                     isSelected: index === root.selectedIndex

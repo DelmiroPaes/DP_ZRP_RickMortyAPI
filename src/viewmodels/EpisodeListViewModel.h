@@ -27,7 +27,9 @@ public:
         SeasonRole,
         EpisodeNumberRole,
         FormattedSeasonRole,
-        ImageRole
+        ImageRole,
+        ThumbnailUrl1Role,
+        ThumbnailUrl2Role
     };
     Q_ENUM(Roles)
 
@@ -48,6 +50,7 @@ public:
     // Actions
     Q_INVOKABLE void loadEpisodes();
     [[nodiscard]] core::Episode getEpisode(int index) const;
+    [[nodiscard]] std::vector<std::string> getFirstCharacterImageUrls(int episodeId, int count = 2) const;
 
 signals:
     void stateChanged();

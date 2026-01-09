@@ -1,7 +1,34 @@
 #include "EpisodeListViewModel.h"
 #include <QMetaObject>
+#include <random>
 
 namespace rickmorty::viewmodels {
+
+namespace {
+// Get two random character indices for an episode (deterministic based on episode ID)
+std::pair<size_t, size_t> getRandomCharacterIndices(int episodeId, size_t charCount) {
+    if (charCount == 0) return {0, 0};
+    if (charCount == 1) return {0, 0};
+
+    // Use episode ID as seed for reproducible randomness
+    std::mt19937 gen(static_cast<unsigned>(episodeId * 12345));
+    std::uniform_int_distribution<size_t> dist(0, charCount - 1);
+
+    size_t idx1 = dist(gen);
+    size_t idx2 = dist(gen);
+
+    // Ensure idx2 is different from idx1 if possible
+    if (charCount > 1) {
+        int attempts = 0;
+        while (idx2 == idx1 && attempts < 10) {
+            idx2 = dist(gen);
+            attempts++;
+        }
+    }
+
+    return {idx1, idx2};
+}
+}
 
 EpisodeListViewModel::EpisodeListViewModel(core::IEpisodeRepository* repository,
                                            QObject* parent)
@@ -26,6 +53,8 @@ QVariant EpisodeListViewModel::data(const QModelIndex& index, int role) const
 
     const auto& episode = m_episodes[static_cast<size_t>(index.row())];
 
+    static constexpr const char* IMAGE_URL_PATTERN = "https://rickandmortyapi.com/api/character/avatar/%1.jpeg";
+
     switch (role) {
     case IdRole:
         return episode.id;
@@ -43,6 +72,14 @@ QVariant EpisodeListViewModel::data(const QModelIndex& index, int role) const
         return QString::fromStdString(episode.formattedSeason());
     case ImageRole:
         return QString::fromStdString(episode.imageUrl);
+    case ThumbnailUrl1Role:
+    case ThumbnailUrl2Role:
+        if (!episode.characterIds.empty()) {
+            auto [idx1, idx2] = getRandomCharacterIndices(episode.id, episode.characterIds.size());
+            size_t idx = (role == ThumbnailUrl1Role) ? idx1 : idx2;
+            return QString(IMAGE_URL_PATTERN).arg(episode.characterIds[idx]);
+        }
+        return QString();
     default:
         return {};
     }
@@ -58,7 +95,9 @@ QHash<int, QByteArray> EpisodeListViewModel::roleNames() const
         {SeasonRole, "season"},
         {EpisodeNumberRole, "episodeNumber"},
         {FormattedSeasonRole, "formattedSeason"},
-        {ImageRole, "image"}
+        {ImageRole, "image"},
+        {ThumbnailUrl1Role, "thumbnailUrl1"},
+        {ThumbnailUrl2Role, "thumbnailUrl2"}
     };
 }
 
@@ -103,6 +142,28 @@ core::Episode EpisodeListViewModel::getEpisode(int index) const
         return m_episodes[static_cast<size_t>(index)];
     }
     return {};
+}
+
+std::vector<std::string> EpisodeListViewModel::getFirstCharacterImageUrls(int episodeId, int count) const
+{
+    static constexpr const char* IMAGE_URL_PATTERN = "https://rickandmortyapi.com/api/character/avatar/%1.jpeg";
+
+    std::vector<std::string> urls;
+
+    // Find episode by ID
+    for (const auto& episode : m_episodes) {
+        if (episode.id == episodeId) {
+            const auto& charIds = episode.characterIds;
+            const int numChars = std::min(count, static_cast<int>(charIds.size()));
+
+            for (int i = 0; i < numChars; ++i) {
+                urls.push_back(QString(IMAGE_URL_PATTERN).arg(charIds[static_cast<size_t>(i)]).toStdString());
+            }
+            break;
+        }
+    }
+
+    return urls;
 }
 
 void EpisodeListViewModel::setState(ViewState::State state)
