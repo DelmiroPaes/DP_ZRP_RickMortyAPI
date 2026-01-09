@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rick and Morty Episode Browser - Análise Arquitetural</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-tertiary: #1f3460;
+            --accent: #e94560;
+            --accent-light: #ff6b6b;
+            --text-primary: #eee;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--accent-light);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 15px;
+        }
+
+        h2 {
+            color: var(--accent);
+            font-size: 1.8em;
+            margin-top: 50px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h3 {
+            color: var(--accent-light);
+            font-size: 1.3em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        h4 {
+            color: var(--text-primary);
+            font-size: 1.1em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1em;
+            margin-bottom: 40px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        a {
+            color: var(--accent-light);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--bg-tertiary);
+            color: var(--accent-light);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        pre {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        code {
+            background-color: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+
+        .toc {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px 35px;
+            margin: 30px 0;
+        }
+
+        .toc h2 {
+            margin-top: 0;
+            font-size: 1.4em;
+        }
+
+        .toc ol {
+            margin-bottom: 0;
+        }
+
+        .diagram {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85em;
+            white-space: pre;
+            line-height: 1.4;
+        }
+
+        .highlight {
+            background-color: var(--bg-tertiary);
+            border-left: 4px solid var(--accent);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 40px 0;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Rick and Morty Episode Browser</h1>
+<p class="subtitle">20260108 - Teste ZRP C++ QT Sênior - Delmiro Paes (delmiro.paes@gmail.com)</p>
+
+<hr>
+
+<div class="toc">
+    <h2>Sumário</h2>
+    <ol>
+        <li><a href="#visao-geral">Visão Geral</a></li>
+        <li><a href="#arquitetura">Arquitetura do Sistema</a></li>
+        <li><a href="#estrutura">Estrutura de Diretórios</a></li>
+        <li><a href="#dominio">Camada de Domínio (Core)</a></li>
+        <li><a href="#servicos">Camada de Serviços (Services)</a></li>
+        <li><a href="#apresentacao">Camada de Apresentação (ViewModels)</a></li>
+        <li><a href="#interface">Camada de Interface (View/UI)</a></li>
+        <li><a href="#fluxo">Fluxo de Dados</a></li>
+        <li><a href="#padroes">Padrões de Projeto Aplicados</a></li>
+        <li><a href="#cleancode">Princípios de Clean Code</a></li>
+        <li><a href="#testes">Testes Automatizados</a></li>
+        <li><a href="#build">Configuração de Build</a></li>
+        <li><a href="#decisoes">Decisões Arquiteturais</a></li>
+    </ol>
+</div>
+
+<hr>
+
+<section id="visao-geral" class="section">
+    <h2>1. Visão Geral</h2>
+
+    <p>O <strong>Rick and Morty Episode Browser</strong> é uma aplicação desktop desenvolvida em <strong>Qt 6 Quick (QML)</strong> com <strong>C++17</strong>, projetada para consumir a <a href="https://rickandmortyapi.com/" target="_blank">Rick and Morty API</a> pública. A aplicação permite aos usuários navegar por episódios da série, visualizar detalhes e explorar os personagens que aparecem em cada episódio.</p>
+
+    <h3>Tecnologias Utilizadas</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Tecnologia</th>
+                <th>Versão</th>
+                <th>Propósito</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>C++</td>
+                <td>C++17</td>
+                <td>Linguagem principal</td>
+            </tr>
+            <tr>
+                <td>Qt</td>
+                <td>6.8+</td>
+                <td>Framework de UI</td>
+            </tr>
+            <tr>
+                <td>Qt Quick/QML</td>
+                <td>6.x</td>
+                <td>Interface declarativa</td>
+            </tr>
+            <tr>
+                <td>CMake</td>
+                <td>3.16+</td>
+                <td>Sistema de build</td>
+            </tr>
+            <tr>
+                <td>Google Test</td>
+                <td>Latest</td>
+                <td>Framework de testes</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Funcionalidades Principais</h3>
+    <ul>
+        <li>Listagem de todos os episódios com thumbnails de personagens</li>
+        <li>Visualização detalhada de episódios selecionados</li>
+        <li>Grade de personagens (cast) por episódio</li>
+        <li>Painel de detalhes do personagem selecionado</li>
+        <li>Interface responsiva com painel colapsável</li>
+        <li>Sistema de design centralizado (Theme)</li>
+    </ul>
+</section>
+
+<section id="arquitetura" class="section">
+    <h2>2. Arquitetura do Sistema</h2>
+
+    <p>A aplicação segue os princípios da <strong>Clean Architecture</strong>, organizando o código em camadas com responsabilidades bem definidas e dependências direcionadas para o centro.</p>
+
+    <h3>Diagrama de Camadas</h3>
+
+    <div class="diagram">┌─────────────────────────────────────────────────────────────────┐
+│                    CAMADA DE INTERFACE (View)                   │
+│               QML Components (EpisodeBrowser, etc.)             │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │ usa (property binding, signals)
+┌──────────────────────────────▼──────────────────────────────────┐
+│                  CAMADA DE APRESENTAÇÃO (ViewModels)            │
+│        QAbstractListModel + QObject com Q_PROPERTY              │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │ usa (injeção de dependência)
+┌──────────────────────────────▼──────────────────────────────────┐
+│                    CAMADA DE SERVIÇOS (Services)                │
+│           Implementações de Repositórios + ApiService           │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │ implementa
+┌──────────────────────────────▼──────────────────────────────────┐
+│                    CAMADA DE DOMÍNIO (Core)                     │
+│              Entidades + Interfaces de Repositório              │
+│                    (C++ puro, sem dependências Qt)              │
+└─────────────────────────────────────────────────────────────────┘</div>
+
+    <h3>Princípios Arquiteturais</h3>
+    <ol>
+        <li><strong>Dependency Rule</strong>: As dependências apontam sempre para dentro, da camada externa para a interna</li>
+        <li><strong>Separation of Concerns</strong>: Cada camada possui responsabilidade única e bem definida</li>
+        <li><strong>Abstraction Principle</strong>: Camadas superiores dependem de abstrações, não de implementações concretas</li>
+        <li><strong>Interface Segregation</strong>: Interfaces de repositório são específicas para cada entidade</li>
+    </ol>
+</section>
+
+<section id="estrutura" class="section">
+    <h2>3. Estrutura de Diretórios</h2>
+
+    <div class="diagram">RickMortyAPI/
+├── CMakeLists.txt                    # Configuração raiz do build
+├── src/                              # Código-fonte C++
+│   ├── main.cpp                      # Ponto de entrada da aplicação
+│   ├── core/                         # Camada de Domínio
+│   │   ├── CMakeLists.txt
+│   │   ├── entities/                 # Entidades de domínio
+│   │   │   ├── Character.h           # Modelo de Personagem
+│   │   │   └── Episode.h             # Modelo de Episódio
+│   │   └── repositories/             # Interfaces de repositório
+│   │       ├── ICharacterRepository.h
+│   │       └── IEpisodeRepository.h
+│   ├── services/                     # Camada de Serviços
+│   │   ├── CMakeLists.txt
+│   │   ├── ApiService.h/cpp          # Cliente HTTP
+│   │   ├── CharacterRepository.h/cpp # Impl. repositório de personagens
+│   │   └── EpisodeRepository.h/cpp   # Impl. repositório de episódios
+│   └── viewmodels/                   # Camada de Apresentação
+│       ├── CMakeLists.txt
+│       ├── ViewState.h               # Enumeração de estados
+│       ├── EpisodeListViewModel.h/cpp
+│       ├── EpisodeDetailViewModel.h/cpp
+│       └── CharacterListViewModel.h/cpp
+├── qml/                              # QML raiz
+│   └── Main.qml                      # Janela principal
+├── modules/                          # Módulos QML
+│   └── RickMortyUI/                  # Componentes de UI
+│       ├── CMakeLists.txt
+│       └── qml/
+│           ├── Theme.qml             # Design system (Singleton)
+│           ├── EpisodeBrowser.qml    # Container principal
+│           ├── EpisodeListPanel.qml  # Painel lateral de episódios
+│           ├── EpisodeListItem.qml   # Item de lista de episódio
+│           ├── EpisodeDetailPanel.qml# Painel de detalhes
+│           ├── EpisodeHeader.qml     # Cabeçalho do episódio
+│           ├── CastGrid.qml          # Grade de personagens
+│           └── CharacterCard.qml     # Card de personagem
+├── tests/                            # Testes unitários
+│   ├── CMakeLists.txt
+│   ├── main.cpp
+│   ├── core/                         # Testes de entidades
+│   ├── services/                     # Testes de serviços
+│   ├── viewmodels/                   # Testes de ViewModels
+│   └── mocks/                        # Mocks para testes
+└── resources/                        # Recursos da aplicação
+    ├── icon.svg
+    └── icon.ico</div>
+</section>
+
+<section id="dominio" class="section">
+    <h2>4. Camada de Domínio (Core)</h2>
+
+    <p>A camada de domínio representa o coração da aplicação, contendo as regras de negócio e entidades principais. Esta camada é <strong>completamente independente de frameworks</strong>, escrita em C++17 puro.</p>
+
+    <h3>4.1 Entidades</h3>
+
+    <h4>Episode</h4>
+    <pre><code>struct Episode {
+    int id;
+    std::string name;           // Nome do episódio
+    std::string airDate;        // Data de exibição
+    std::string episodeCode;    // Código (ex: "S01E01")
+    int season;                 // Número da temporada
+    int episodeNumber;          // Número do episódio
+    std::vector&lt;int&gt; characterIds;  // IDs dos personagens
+    std::string imageUrl;       // URL da imagem
+
+    std::string formattedSeason() const;  // "Season X, Episode Y"
+    bool isValid() const;                 // Validação (id &gt; 0)
+};</code></pre>
+
+    <h4>Character</h4>
+    <pre><code>struct Character {
+    int id;
+    std::string name;           // Nome do personagem
+    std::string status;         // "Alive", "Dead", "unknown"
+    std::string species;        // Espécie
+    std::string type;           // Subtipo/variação
+    std::string gender;         // Gênero
+    std::string origin;         // Local de origem
+    std::string location;       // Localização atual
+    std::string imageUrl;       // URL do avatar
+    int episodeCount;           // Quantidade de episódios
+
+    std::string initial() const;  // Primeira letra do nome
+    bool isValid() const;         // Validação (id &gt; 0)
+};</code></pre>
+
+    <h3>4.2 Interfaces de Repositório</h3>
+
+    <p>O padrão <strong>Repository</strong> abstrai a origem dos dados, permitindo substituição de implementações sem afetar as camadas superiores.</p>
+
+    <h4>IEpisodeRepository</h4>
+    <pre><code>namespace core {
+    using EpisodeResult = std::variant&lt;std::vector&lt;Episode&gt;, std::string&gt;;
+    using EpisodeCallback = std::function&lt;void(EpisodeResult)&gt;;
+
+    class IEpisodeRepository {
+    public:
+        virtual ~IEpisodeRepository() = default;
+        virtual void fetchAllEpisodes(EpisodeCallback callback) = 0;
+    };
+}</code></pre>
+
+    <h4>ICharacterRepository</h4>
+    <pre><code>namespace core {
+    using CharacterResult = std::variant&lt;std::vector&lt;Character&gt;, std::string&gt;;
+    using CharacterCallback = std::function&lt;void(CharacterResult)&gt;;
+
+    class ICharacterRepository {
+    public:
+        virtual ~ICharacterRepository() = default;
+        virtual void fetchCharacters(
+            const std::vector&lt;int&gt;&amp; ids,
+            CharacterCallback callback
+        ) = 0;
+    };
+}</code></pre>
+
+    <div class="highlight">
+        <strong>Tratamento de Erros:</strong> O uso de <code>std::variant</code> permite retorno type-safe de sucesso ou erro, evitando exceções em contextos assíncronos.
+    </div>
+</section>
+
+<section id="servicos" class="section">
+    <h2>5. Camada de Serviços (Services)</h2>
+
+    <p>A camada de serviços implementa as interfaces definidas no domínio e gerencia a comunicação com APIs externas.</p>
+
+    <h3>5.1 ApiService</h3>
+
+    <p>Cliente HTTP centralizado que encapsula <code>QNetworkAccessManager</code>.</p>
+
+    <pre><code>class ApiService : public QObject {
+    Q_OBJECT
+public:
+    using JsonResult = std::variant&lt;QJsonArray, QString&gt;;
+    using JsonCallback = std::function&lt;void(JsonResult)&gt;;
+
+    void get(const QString&amp; endpoint, JsonCallback callback);
+
+private:
+    static constexpr auto BASE_URL = "https://rickandmortyapi.com/api";
+    static constexpr int TIMEOUT_MS = 5000;
+
+    QNetworkAccessManager* m_networkManager;
+};</code></pre>
+
+    <p><strong>Responsabilidades:</strong></p>
+    <ul>
+        <li>Gerenciamento de requisições HTTP GET</li>
+        <li>Timeout de 5 segundos por requisição</li>
+        <li>Parsing automático de JSON</li>
+        <li>Extração do campo "results" em respostas paginadas</li>
+        <li>Tratamento de erros de rede</li>
+    </ul>
+
+    <h3>5.2 EpisodeRepository</h3>
+
+    <p>Implementação concreta de <code>IEpisodeRepository</code>.</p>
+
+    <pre><code>class EpisodeRepository : public QObject, public core::IEpisodeRepository {
+    Q_OBJECT
+public:
+    explicit EpisodeRepository(ApiService* apiService, QObject* parent = nullptr);
+    void fetchAllEpisodes(core::EpisodeCallback callback) override;
+
+private:
+    core::Episode parseEpisode(const QJsonObject&amp; json);
+    std::pair&lt;int, int&gt; parseEpisodeCode(const QString&amp; code);
+    std::vector&lt;int&gt; parseCharacterIds(const QJsonArray&amp; urls);
+
+    ApiService* m_apiService;
+};</code></pre>
+
+    <p><strong>Parsing de Dados:</strong></p>
+    <ul>
+        <li>Extrai código de episódio usando regex: <code>S(\d+)E(\d+)</code></li>
+        <li>Converte URLs de personagens em IDs numéricos</li>
+        <li>Mapeia campos JSON para propriedades da entidade</li>
+    </ul>
+
+    <h3>5.3 CharacterRepository</h3>
+
+    <p>Implementação concreta de <code>ICharacterRepository</code>.</p>
+
+    <pre><code>class CharacterRepository : public QObject, public core::ICharacterRepository {
+    Q_OBJECT
+public:
+    explicit CharacterRepository(ApiService* apiService, QObject* parent = nullptr);
+    void fetchCharacters(
+        const std::vector&lt;int&gt;&amp; ids,
+        core::CharacterCallback callback
+    ) override;
+
+private:
+    core::Character parseCharacter(const QJsonObject&amp; json);
+    ApiService* m_apiService;
+};</code></pre>
+
+    <p><strong>Características:</strong></p>
+    <ul>
+        <li>Busca múltiplos personagens em uma única requisição (IDs separados por vírgula)</li>
+        <li>Ordenação alfabética por nome (case-insensitive)</li>
+        <li>Extração de objetos aninhados (origin, location)</li>
+        <li>Contagem de episódios a partir do array de URLs</li>
+    </ul>
+</section>
+
+<section id="apresentacao" class="section">
+    <h2>6. Camada de Apresentação (ViewModels)</h2>
+
+    <p>A camada de ViewModels implementa o padrão <strong>MVVM</strong>, servindo como ponte entre a lógica de negócios e a interface de usuário QML.</p>
+
+    <h3>6.1 ViewState</h3>
+
+    <p>Enumeração para gerenciamento de estados de carregamento.</p>
+
+    <pre><code>class ViewState {
+    Q_GADGET
+    Q_ENUMS(State)
+public:
+    enum State {
+        Idle = 0,       // Estado inicial
+        Loading = 1,    // Carregando dados
+        Success = 2,    // Dados carregados com sucesso
+        Error = 3       // Erro ao carregar
+    };
+};</code></pre>
+
+    <h3>6.2 EpisodeListViewModel</h3>
+
+    <p>Modelo de lista para episódios, estendendo <code>QAbstractListModel</code>.</p>
+
+    <pre><code>class EpisodeListViewModel : public QAbstractListModel {
+    Q_OBJECT
+    Q_PROPERTY(int state READ state NOTIFY stateChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(int selectedIndex READ selectedIndex
+               WRITE setSelectedIndex NOTIFY selectedIndexChanged)
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
+
+public:
+    enum Roles {
+        IdRole = Qt::UserRole + 1,
+        NameRole,
+        AirDateRole,
+        EpisodeCodeRole,
+        SeasonRole,
+        EpisodeNumberRole,
+        FormattedSeasonRole,
+        ImageRole,
+        ThumbnailUrl1Role,
+        ThumbnailUrl2Role
+    };
+
+    Q_INVOKABLE void loadEpisodes();
+    Q_INVOKABLE QVariantMap getEpisode(int index);
+    Q_INVOKABLE QStringList getFirstCharacterImageUrls(int episodeId, int count);
+
+signals:
+    void episodeSelected(const QVariantList&amp; characterIds);
+    // ... outros sinais
+};</code></pre>
+
+    <p><strong>Funcionalidades:</strong></p>
+    <ul>
+        <li>Carregamento assíncrono de episódios</li>
+        <li>Geração de thumbnails com seleção determinística de personagens</li>
+        <li>Emissão de sinal <code>episodeSelected</code> com IDs de personagens ao selecionar episódio</li>
+    </ul>
+
+    <h3>6.3 EpisodeDetailViewModel</h3>
+
+    <p>ViewModel para detalhes do episódio selecionado.</p>
+
+    <pre><code>class EpisodeDetailViewModel : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(int episodeId READ episodeId NOTIFY episodeChanged)
+    Q_PROPERTY(QString name READ name NOTIFY episodeChanged)
+    Q_PROPERTY(QString airDate READ airDate NOTIFY episodeChanged)
+    Q_PROPERTY(QString episodeCode READ episodeCode NOTIFY episodeChanged)
+    Q_PROPERTY(QString formattedSeason READ formattedSeason NOTIFY episodeChanged)
+    Q_PROPERTY(QString imageUrl READ imageUrl NOTIFY episodeChanged)
+    Q_PROPERTY(bool hasEpisode READ hasEpisode NOTIFY episodeChanged)
+
+public:
+    void setEpisode(const core::Episode&amp; episode);
+    void clear();
+
+signals:
+    void episodeChanged();
+};</code></pre>
+
+    <h3>6.4 CharacterListViewModel</h3>
+
+    <p>Modelo de lista para personagens com suporte a seleção.</p>
+
+    <pre><code>class CharacterListViewModel : public QAbstractListModel {
+    Q_OBJECT
+    Q_PROPERTY(int state READ state NOTIFY stateChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(int selectedIndex READ selectedIndex
+               WRITE setSelectedIndex NOTIFY selectedIndexChanged)
+    Q_PROPERTY(bool hasSelection READ hasSelection NOTIFY selectedIndexChanged)
+
+    // Propriedades do personagem selecionado
+    Q_PROPERTY(QString selectedName READ selectedName NOTIFY selectedIndexChanged)
+    Q_PROPERTY(QString selectedStatus READ selectedStatus NOTIFY selectedIndexChanged)
+    Q_PROPERTY(QString selectedSpecies READ selectedSpecies NOTIFY selectedIndexChanged)
+    // ... outras propriedades de seleção
+
+public:
+    enum Roles {
+        IdRole = Qt::UserRole + 1,
+        NameRole, StatusRole, SpeciesRole, TypeRole,
+        GenderRole, OriginRole, LocationRole, ImageRole,
+        InitialRole, EpisodeCountRole
+    };
+
+    Q_INVOKABLE void loadCharacters(const QVariantList&amp; ids);
+    Q_INVOKABLE void clear();
+    Q_INVOKABLE void clearSelection();
+};</code></pre>
+
+    <div class="highlight">
+        <strong>Thread Safety:</strong> Utiliza <code>QMetaObject::invokeMethod</code> com <code>Qt::QueuedConnection</code> para garantir atualizações de UI na thread principal.
+    </div>
+</section>
+
+<section id="interface" class="section">
+    <h2>7. Camada de Interface (View/UI)</h2>
+
+    <p>A camada de interface utiliza <strong>Qt Quick/QML</strong> para criar uma UI declarativa, responsiva e visualmente atraente.</p>
+
+    <h3>7.1 Sistema de Design (Theme.qml)</h3>
+
+    <p>Singleton que centraliza todas as configurações visuais da aplicação.</p>
+
+    <pre><code>pragma Singleton
+import QtQuick
+
+QtObject {
+    // Paleta de Cores
+    readonly property color background: "#1a1a2e"      // Fundo principal
+    readonly property color surface: "#16213e"         // Superfícies
+    readonly property color surfaceLight: "#1f3460"    // Superfícies destacadas
+    readonly property color accent: "#e94560"          // Cor de destaque
+    readonly property color accentLight: "#ff6b6b"     // Destaque claro
+    readonly property color textPrimary: "#eee"        // Texto principal
+    readonly property color textSecondary: "#94a3b8"   // Texto secundário
+    readonly property color divider: "#334155"         // Divisores
+
+    // Tipografia
+    readonly property int fontSizeSmall: 11
+    readonly property int fontSizeMedium: 14
+    readonly property int fontSizeLarge: 18
+    readonly property int fontSizeTitle: 28
+    readonly property int fontSizeHeader: 36
+
+    // Espaçamento
+    readonly property int spacingSmall: 4
+    readonly property int spacingMedium: 8
+    readonly property int spacingLarge: 16
+    readonly property int spacingXLarge: 24
+
+    // Dimensões de Componentes
+    readonly property int episodeItemHeight: 80
+    readonly property int characterCardWidth: 140
+    readonly property int characterCardHeight: 170
+    readonly property int avatarSize: 100
+    readonly property int thumbnailWidth: 100
+    readonly property int thumbnailHeight: 56
+    readonly property int borderRadius: 8
+    readonly property int episodePanelWidth: 320
+}</code></pre>
+
+    <h3>7.2 Hierarquia de Componentes</h3>
+
+    <div class="diagram">Main.qml (Window)
+│
+└── EpisodeBrowser (Container Principal)
+    │
+    ├── EpisodeListPanel (Painel Lateral)
+    │   │
+    │   └── ListView
+    │       └── EpisodeListItem (Delegado)
+    │           ├── Thumbnail Grid (2 imagens)
+    │           └── Informações do episódio
+    │
+    ├── EpisodeDetailPanel (Área de Detalhes)
+    │   │
+    │   ├── EpisodeHeader
+    │   │   ├── Título do episódio
+    │   │   └── Temporada formatada
+    │   │
+    │   ├── Painel de Detalhes do Personagem
+    │   │   ├── Imagem do personagem
+    │   │   └── Informações (nome, status, espécie, etc.)
+    │   │
+    │   └── CastGrid (Grade de Personagens)
+    │       └── GridView
+    │           └── CharacterCard (Delegado)
+    │               ├── Avatar
+    │               └── Nome
+    │
+    └── Toggle Button (Menu hambúrguer)</div>
+
+    <h3>7.3 Componentes Principais</h3>
+
+    <h4>EpisodeBrowser.qml</h4>
+    <p>Container principal que gerencia o layout da aplicação.</p>
+    <ul>
+        <li>Layout em duas colunas (sidebar + área principal)</li>
+        <li>Painel colapsável com animação de 250ms</li>
+        <li>Botão de toggle com ícone hambúrguer (☰)</li>
+        <li>Gerenciamento de estado <code>panelVisible</code></li>
+    </ul>
+
+    <h4>EpisodeListPanel.qml</h4>
+    <p>Painel lateral com lista de episódios.</p>
+    <ul>
+        <li>Estados visuais: Idle, Loading, Success, Error</li>
+        <li>ListView com delegate <code>EpisodeListItem</code></li>
+        <li>Indicador de seleção com borda colorida</li>
+    </ul>
+
+    <h4>EpisodeDetailPanel.qml</h4>
+    <p>Área de detalhes do episódio e personagem.</p>
+    <ul>
+        <li>Animação de entrada para imagem do personagem (scale 0.9 → 1.02 → 1.0)</li>
+        <li>Animação de "respiração" contínua</li>
+        <li>Área scrollável para informações do personagem</li>
+        <li>Indicador de scroll visual</li>
+    </ul>
+
+    <h4>CharacterCard.qml</h4>
+    <p>Card individual de personagem na grade.</p>
+    <ul>
+        <li>Estados de imagem: Loading, Error, Loaded</li>
+        <li>Spinner animado durante carregamento</li>
+        <li>Placeholder com inicial do nome em caso de erro</li>
+        <li>Feedback visual de hover e seleção</li>
+    </ul>
+</section>
+
+<section id="fluxo" class="section">
+    <h2>8. Fluxo de Dados</h2>
+
+    <h3>Diagrama de Fluxo</h3>
+
+    <div class="diagram">┌──────────────────────────────────────────────────────────────────┐
+│                       INTERFACE DE USUÁRIO                       │
+│           (EpisodeBrowser, EpisodeListPanel, etc.)               │
+└─────────────────────────────┬────────────────────────────────────┘
+                              │
+                 ┌────────────▼────────────┐
+                 │  Usuário clica em um    │
+                 │  episódio na lista      │
+                 └────────────┬────────────┘
+                              │
+┌─────────────────────────────▼────────────────────────────────────┐
+│                     EpisodeListViewModel                         │
+│                                                                  │
+│  1. setSelectedIndex(index) é chamado                            │
+│  2. Emite sinal episodeSelected(characterIds)                    │
+└─────────────────────────────┬────────────────────────────────────┘
+                              │
+┌─────────────────────────────▼────────────────────────────────────┐
+│                         main.cpp                                 │
+│                                                                  │
+│  Slot conectado ao sinal:                                        │
+│  1. Obtém episódio: episodeListVM.getEpisode(index)              │
+│  2. Atualiza detalhes: episodeDetailVM.setEpisode()              │
+│  3. Carrega cast: characterListVM.loadCharacters(ids)            │
+└─────────────────────────────┬────────────────────────────────────┘
+                              │
+┌─────────────────────────────▼────────────────────────────────────┐
+│                   CharacterListViewModel                         │
+│                                                                  │
+│  1. Define state = Loading                                       │
+│  2. Chama repository.fetchCharacters(ids, callback)              │
+└─────────────────────────────┬────────────────────────────────────┘
+                              │
+┌─────────────────────────────▼────────────────────────────────────┐
+│                    CharacterRepository                           │
+│                                                                  │
+│  1. Formata IDs: "1,2,3,4,5"                                     │
+│  2. Chama apiService.get("/character/1,2,3,4,5", callback)       │
+└─────────────────────────────┬────────────────────────────────────┘
+                              │
+┌─────────────────────────────▼────────────────────────────────────┐
+│                        ApiService                                │
+│                                                                  │
+│  1. Envia requisição HTTP GET                                    │
+│  2. Recebe resposta JSON                                         │
+│  3. Retorna via callback                                         │
+└─────────────────────────────┬────────────────────────────────────┘
+                              │
+                              │ (Callback chain retorna)
+                              │
+┌─────────────────────────────▼────────────────────────────────────┐
+│               CharacterRepository (callback)                     │
+│                                                                  │
+│  1. Parse JSON - std::vector&lt;Character&gt;                          │
+│  2. Ordena alfabeticamente                                       │
+│  3. Retorna via callback                                         │
+└─────────────────────────────┬────────────────────────────────────┘
+                              │
+┌─────────────────────────────▼────────────────────────────────────┐
+│            CharacterListViewModel (callback)                     │
+│                                                                  │
+│  1. QMetaObject::invokeMethod (thread-safe)                      │
+│  2. Atualiza m_characters                                        │
+│  3. Define state = Success                                       │
+│  4. Emite dataChanged()                                          │
+└─────────────────────────────┬────────────────────────────────────┘
+                              │
+┌─────────────────────────────▼────────────────────────────────────┐
+│                        QML (CastGrid)                            │
+│                                                                  │
+│  1. GridView detecta mudança no model                            │
+│  2. Re-renderiza CharacterCards                                  │
+│  3. UI atualizada com novos personagens                          │
+└──────────────────────────────────────────────────────────────────┘</div>
+</section>
+
+<section id="padroes" class="section">
+    <h2>9. Padrões de Projeto Aplicados</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Padrão</th>
+                <th>Local de Aplicação</th>
+                <th>Benefício</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Clean Architecture</strong></td>
+                <td>Estrutura geral em 4 camadas</td>
+                <td>Separação de responsabilidades, testabilidade</td>
+            </tr>
+            <tr>
+                <td><strong>Repository Pattern</strong></td>
+                <td>IEpisodeRepository, ICharacterRepository</td>
+                <td>Abstração da fonte de dados</td>
+            </tr>
+            <tr>
+                <td><strong>Dependency Injection</strong></td>
+                <td>main.cpp</td>
+                <td>Acoplamento fraco, facilita testes</td>
+            </tr>
+            <tr>
+                <td><strong>MVVM</strong></td>
+                <td>ViewModels + QML</td>
+                <td>Separação UI/lógica de apresentação</td>
+            </tr>
+            <tr>
+                <td><strong>Observer</strong></td>
+                <td>Qt Signals/Slots</td>
+                <td>Comunicação desacoplada entre componentes</td>
+            </tr>
+            <tr>
+                <td><strong>Singleton</strong></td>
+                <td>Theme.qml</td>
+                <td>Design system centralizado</td>
+            </tr>
+            <tr>
+                <td><strong>State Machine</strong></td>
+                <td>ViewState enum</td>
+                <td>Gerenciamento de estados de carregamento</td>
+            </tr>
+            <tr>
+                <td><strong>Callback Pattern</strong></td>
+                <td>Operações assíncronas</td>
+                <td>Non-blocking, integração com event loop</td>
+            </tr>
+            <tr>
+                <td><strong>Factory</strong></td>
+                <td>main.cpp</td>
+                <td>Criação centralizada de componentes</td>
+            </tr>
+            <tr>
+                <td><strong>Delegate</strong></td>
+                <td>ListView/GridView</td>
+                <td>Renderização eficiente de listas</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<section id="cleancode" class="section">
+    <h2>10. Princípios de Clean Code</h2>
+
+    <h3>10.1 Nomenclatura Clara e Consistente</h3>
+    <pre><code>// Nomes descritivos que revelam intenção
+void fetchAllEpisodes(EpisodeCallback callback);
+void loadCharacters(const QVariantList&amp; ids);
+QString formattedSeason() const;
+
+// Prefixos consistentes
+m_networkManager    // Membros privados
+parseEpisode()      // Métodos de parsing
+IEpisodeRepository  // Interfaces (I prefix)</code></pre>
+
+    <h3>10.2 Funções Pequenas e Focadas</h3>
+    <pre><code>// Cada função tem uma única responsabilidade
+core::Episode parseEpisode(const QJsonObject&amp; json);
+std::pair&lt;int, int&gt; parseEpisodeCode(const QString&amp; code);
+std::vector&lt;int&gt; parseCharacterIds(const QJsonArray&amp; urls);</code></pre>
+
+    <h3>10.3 Tratamento de Erros Explícito</h3>
+    <pre><code>// std::variant para retorno type-safe
+using EpisodeResult = std::variant&lt;std::vector&lt;Episode&gt;, std::string&gt;;
+
+// Callback recebe resultado ou erro
+void fetchAllEpisodes(EpisodeCallback callback) {
+    // ...
+    if (std::holds_alternative&lt;QString&gt;(result)) {
+        // Tratamento de erro
+    } else {
+        // Processamento de sucesso
+    }
+}</code></pre>
+
+    <h3>10.4 Imutabilidade e Const Correctness</h3>
+    <pre><code>// Métodos const quando não modificam estado
+QString name() const { return m_name; }
+bool hasEpisode() const { return m_hasEpisode; }
+std::string formattedSeason() const;
+
+// Referências const para parâmetros
+void fetchCharacters(const std::vector&lt;int&gt;&amp; ids, ...);</code></pre>
+
+    <h3>10.5 Organização Modular</h3>
+    <ul>
+        <li><strong>Separação por feature</strong>: Cada componente QML em arquivo próprio</li>
+        <li><strong>Separação por camada</strong>: Diretórios distintos para core, services, viewmodels</li>
+        <li><strong>Módulos QML</strong>: RickMortyUI e RickMortyViewModels</li>
+    </ul>
+</section>
+
+<section id="testes" class="section">
+    <h2>11. Testes Automatizados</h2>
+
+    <h3>11.1 Framework e Estrutura</h3>
+    <ul>
+        <li><strong>Google Test (gtest)</strong>: Framework de testes unitários</li>
+        <li><strong>Google Mock (gmock)</strong>: Framework para criação de mocks</li>
+    </ul>
+
+    <h3>11.2 Suítes de Teste</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Executável</th>
+                <th>Camada</th>
+                <th>Cobertura</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>CoreTests</td>
+                <td>Domain</td>
+                <td>Entidades (Character, Episode)</td>
+            </tr>
+            <tr>
+                <td>ServicesTests</td>
+                <td>Services</td>
+                <td>Repositórios, parsing de dados</td>
+            </tr>
+            <tr>
+                <td>ViewModelTests</td>
+                <td>Presentation</td>
+                <td>ViewModels, signals, estados</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>11.3 Exemplo de Mock</h3>
+    <pre><code>class MockEpisodeRepository : public core::IEpisodeRepository {
+public:
+    MOCK_METHOD(void, fetchAllEpisodes,
+                (core::EpisodeCallback callback), (override));
+};
+
+class MockCharacterRepository : public core::ICharacterRepository {
+public:
+    MOCK_METHOD(void, fetchCharacters,
+                (const std::vector&lt;int&gt;&amp; ids, core::CharacterCallback callback),
+                (override));
+};</code></pre>
+
+    <h3>11.4 Exemplo de Teste</h3>
+    <pre><code>TEST_F(EpisodeListViewModelTests, LoadEpisodesChangesStateToLoading) {
+    EXPECT_CALL(*mockRepository, fetchAllEpisodes(testing::_))
+        .Times(1);
+
+    viewModel-&gt;loadEpisodes();
+
+    EXPECT_EQ(viewModel-&gt;state(), ViewState::Loading);
+}</code></pre>
+</section>
+
+<section id="build" class="section">
+    <h2>12. Configuração de Build</h2>
+
+    <h3>12.1 Requisitos</h3>
+
+    <h4>Build System</h4>
+    <table>
+        <thead><tr><th>Ferramenta</th><th>Versão</th><th>Observação</th></tr></thead>
+        <tbody>
+            <tr><td>CMake</td><td>3.16+</td><td>Sistema de build multiplataforma</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Linguagem</h4>
+    <table>
+        <thead><tr><th>Requisito</th><th>Versão</th><th>Observação</th></tr></thead>
+        <tbody>
+            <tr><td>C++ Standard</td><td>C++17</td><td>Requerido para std::variant, std::optional, etc.</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Compilador (Windows)</h4>
+    <table>
+        <thead><tr><th>Ferramenta</th><th>Versão</th><th>Observação</th></tr></thead>
+        <tbody>
+            <tr><td>MSVC</td><td>VS 2019+</td><td>Recomendado, suporte completo a C++17</td></tr>
+            <tr><td>MinGW-w64</td><td>8.0+</td><td>Alternativa com suporte C++17</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Framework Qt</h4>
+    <table>
+        <thead><tr><th>Componente</th><th>Versão</th><th>Uso</th></tr></thead>
+        <tbody>
+            <tr><td>Qt Base</td><td>6.8+</td><td>Versão mínima requerida</td></tr>
+            <tr><td>Qt6::Quick</td><td>6.8+</td><td>Engine QML e interface declarativa</td></tr>
+            <tr><td>Qt6::Network</td><td>6.8+</td><td>Requisições HTTP (QNetworkAccessManager)</td></tr>
+            <tr><td>Qt6::Svg</td><td>6.8+</td><td>Renderização de ícones SVG</td></tr>
+            <tr><td>Qt6::Qml</td><td>6.8+</td><td>Sistema de módulos QML</td></tr>
+            <tr><td>Qt6::Core</td><td>6.8+</td><td>Tipos base (QString, QObject, etc.)</td></tr>
+            <tr><td>Qt6::Test</td><td>6.8+</td><td>Apenas para testes unitários</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Testes (Opcional)</h4>
+    <table>
+        <thead><tr><th>Ferramenta</th><th>Versão</th><th>Observação</th></tr></thead>
+        <tbody>
+            <tr><td>Google Test</td><td>v1.14.0</td><td>Obtido automaticamente via FetchContent</td></tr>
+            <tr><td>Google Mock</td><td>v1.14.0</td><td>Incluído no Google Test</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Ferramentas Auxiliares (Windows)</h4>
+    <table>
+        <thead><tr><th>Ferramenta</th><th>Versão</th><th>Observação</th></tr></thead>
+        <tbody>
+            <tr><td>windeployqt</td><td>Qt 6.8+</td><td>Incluído na instalação Qt</td></tr>
+            <tr><td>Git</td><td>Qualquer</td><td>Para download automático do Google Test</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Resumo de Instalação Mínima (Windows)</h4>
+    <ol>
+        <li><strong>Visual Studio 2019/2022</strong> com workload "Desktop development with C++"</li>
+        <li><strong>Qt 6.8+</strong> com componentes: Qt Quick, Qt Network, Qt Svg</li>
+        <li><strong>CMake 3.16+</strong> (incluso no Visual Studio ou Qt)</li>
+        <li><strong>Git</strong> (para FetchContent do Google Test)</li>
+    </ol>
+
+    <h3>12.2 Comandos de Build</h3>
+    <pre><code># Configurar (a partir da raiz do projeto)
+cmake -B build -S .
+
+# Compilar (Debug)
+cmake --build build --config Debug
+
+# Compilar (Release)
+cmake --build build --config Release
+
+# Executar aplicação (Debug)
+.\build\debug\appRickMortyAPI.exe
+
+# Executar aplicação (Release)
+.\build\release\appRickMortyAPI.exe
+
+# Deploy para distribuição (Release)
+cmake --build build --config Release --target deploy
+.\install\bin\appRickMortyAPI.exe</code></pre>
+
+    <h3>12.3 Estrutura CMake</h3>
+    <div class="diagram">CMakeLists.txt (raiz)
+├── src/core/CMakeLists.txt          # Biblioteca header-only
+├── src/services/CMakeLists.txt      # Biblioteca estática
+├── src/viewmodels/CMakeLists.txt    # Módulo QML
+├── modules/RickMortyUI/CMakeLists.txt  # Módulo QML UI
+└── tests/CMakeLists.txt             # Executáveis de teste</div>
+</section>
+
+<section id="decisoes" class="section">
+    <h2>13. Decisões Arquiteturais</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Decisão</th>
+                <th>Justificativa</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Core layer sem Qt</strong></td>
+                <td>Domínio reutilizável, testável, portátil</td>
+            </tr>
+            <tr>
+                <td><strong>Repository pattern</strong></td>
+                <td>Abstrai detalhes de API, permite mocking</td>
+            </tr>
+            <tr>
+                <td><strong>QAbstractListModel</strong></td>
+                <td>Integração nativa com QML, renderização eficiente</td>
+            </tr>
+            <tr>
+                <td><strong>std::variant para erros</strong></td>
+                <td>Type-safe, evita exceções em contexto assíncrono</td>
+            </tr>
+            <tr>
+                <td><strong>Callbacks assíncronos</strong></td>
+                <td>Compatível com event loop Qt, non-blocking</td>
+            </tr>
+            <tr>
+                <td><strong>Injeção de dependência em main.cpp</strong></td>
+                <td>Wiring centralizado, fácil modificação</td>
+            </tr>
+            <tr>
+                <td><strong>Singleton Theme.qml</strong></td>
+                <td>Design system consistente em toda UI</td>
+            </tr>
+            <tr>
+                <td><strong>MVVM</strong></td>
+                <td>Separação clara entre UI e lógica de apresentação</td>
+            </tr>
+            <tr>
+                <td><strong>Randomização determinística de thumbnails</strong></td>
+                <td>Mesmo episódio sempre mostra mesmos personagens</td>
+            </tr>
+            <tr>
+                <td><strong>QMetaObject::invokeMethod</strong></td>
+                <td>Thread safety para atualizações de UI</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<hr>
+
+<section class="section">
+    <h2>Considerações Finais</h2>
+
+    <p>O <strong>Rick and Morty Episode Browser</strong> demonstra a aplicação prática de princípios modernos de arquitetura de software em um contexto de aplicação desktop Qt/QML. A separação em camadas bem definidas, combinada com padrões de projeto estabelecidos, resulta em um código:</p>
+
+    <ul>
+        <li><strong>Manutenível</strong>: Mudanças em uma camada não afetam outras</li>
+        <li><strong>Testável</strong>: Cada componente pode ser testado isoladamente</li>
+        <li><strong>Extensível</strong>: Novos repositórios e ViewModels seguem padrões estabelecidos</li>
+        <li><strong>Legível</strong>: Nomenclatura clara e funções focadas</li>
+    </ul>
+
+    <p>A arquitetura permite evolução independente de cada camada, facilitando tanto a manutenção quanto a adição de novas funcionalidades.</p>
+</section>
+
+<div class="footer">
+    <p>Documento gerado em Janeiro de 2026</p>
+</div>
+
+</body>
+</html>
