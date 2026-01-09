@@ -5,7 +5,7 @@ project(RickMortyAPI VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Network)
+find_package(Qt6 REQUIRED COMPONENTS Quick Network Svg)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -19,6 +19,18 @@ add_subdirectory(modules/RickMortyUI)
 qt_add_executable(appRickMortyAPI
     src/main.cpp
 )
+
+# Add application icon resources
+qt_add_resources(appRickMortyAPI "icons"
+    PREFIX "/"
+    FILES
+        resources/icon.svg
+)
+
+# Windows executable icon (requires icon.ico file)
+if(WIN32 AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.ico")
+    target_sources(appRickMortyAPI PRIVATE resources/app.rc)
+endif()
 
 qt_add_qml_module(appRickMortyAPI
     URI RickMortyAPI
@@ -37,6 +49,7 @@ target_link_libraries(appRickMortyAPI
     PRIVATE
         Qt6::Quick
         Qt6::Network
+        Qt6::Svg
         RickMortyCore
         RickMortyServices
         RickMortyViewModelsplugin

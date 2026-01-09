@@ -1,6 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QIcon>
 #include <QtQml/qqmlextensionplugin.h>
 
 // Services
@@ -19,6 +20,8 @@ Q_IMPORT_QML_PLUGIN(RickMortyViewModelsPlugin)
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+    app.setWindowIcon(QIcon(":/resources/icon.svg"));
+
     QQmlApplicationEngine engine;
 
     // Create services (dependency injection)
