@@ -16,10 +16,11 @@ public:
 
     void fetchCharacters(const std::vector<int>& ids, core::CharacterCallback callback) override;
 
+    // Static parsing method (public for testing)
+    static core::Character parseCharacter(const QJsonObject& json);
+
 private:
     ApiService* m_apiService;
-
-    static core::Character parseCharacter(const QJsonObject& json);
 };
 
 }  // namespace rickmorty::services
