@@ -2,6 +2,14 @@
 
 Aplicação Qt Quick para consulta à API do Rick and Morty.
 
+## Teste Rápido (Windows x64)
+
+Para testar a aplicação sem compilar, execute diretamente:
+
+```
+RickMortyAPI_Ready_to_Run\appRickMortyAPI.exe
+```
+
 ## Requisitos
 
 - Qt 6.8+
@@ -11,40 +19,17 @@ Aplicação Qt Quick para consulta à API do Rick and Morty.
 
 ## Instalação do Qt 6.8 (Windows)
 
-### 1. Download do Instalador
+1. Baixe o instalador oficial do Qt para **Windows x64**:
 
-Baixe o instalador oficial do Qt:
+   **https://www.qt.io/download-qt-installer-oss**
 
-**https://www.qt.io/download-qt-installer-oss**
+2. Execute o instalador e aceite as opções padrão
 
-Arquivo: `qt-online-installer-windows-x64-4.10.0.exe` (versão pode variar)
-
-### 2. Instalação Silenciosa (Recomendado)
-
-Abra o **Prompt de Comando como Administrador** e execute:
-
-```batch
-qt-online-installer-windows-x64-4.10.0.exe --root C:\Qt --accept-licenses --default-answer --confirm-command install qt.qt6.680.win64_msvc2022_64 qt.qt6.680.addons.qtsvg qt.tools.cmake qt.tools.ninja
-```
-
-#### Componentes instalados:
-
-| Componente | Descrição |
-|------------|-----------|
-| `qt.qt6.680.win64_msvc2022_64` | Qt 6.8.0 completo (Quick, Network, Qml, Core, Test) |
-| `qt.qt6.680.addons.qtsvg` | Módulo SVG |
-| `qt.tools.cmake` | CMake |
-| `qt.tools.ninja` | Ninja build system |
-
-### 3. Configurar PATH
-
-Após a instalação, adicione ao PATH do sistema:
-
-```batch
-setx PATH "%PATH%;C:\Qt\6.8.0\msvc2022_64\bin;C:\Qt\Tools\CMake_64\bin;C:\Qt\Tools\Ninja"
-```
-
-Ou configure manualmente em: **Configurações > Sistema > Sobre > Configurações avançadas do sistema > Variáveis de Ambiente**
+3. Certifique-se de que os seguintes componentes estão selecionados:
+   - Qt 6.8.x para MSVC 2022 64-bit
+   - Qt SVG
+   - CMake
+   - Ninja
 
 ## Bootstrap (Recomendado)
 
@@ -109,6 +94,7 @@ RickMortyAPI/
 ├── CMakeLists.txt           # Configuração principal do build
 ├── bootstrap.bat            # Script de bootstrap (wrapper)
 ├── bootstrap.ps1            # Script de bootstrap (PowerShell)
+├── RickMortyAPI_Ready_to_Run/ # Binários pré-compilados para teste rápido
 ├── src/
 │   ├── main.cpp             # Ponto de entrada da aplicação
 │   ├── core/                # Camada de domínio (entidades)

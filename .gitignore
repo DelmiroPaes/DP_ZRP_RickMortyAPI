@@ -83,3 +83,7 @@ CMakeLists.txt.user*
 /build*/
 /deps/
 /install/
+
+# Ready to Run - pre-built binaries for quick testing (tracked in git)
+!/RickMortyAPI_Ready_to_Run/
+!/RickMortyAPI_Ready_to_Run/**
