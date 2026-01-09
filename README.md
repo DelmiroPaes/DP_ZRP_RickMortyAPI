@@ -12,10 +12,9 @@ RickMortyAPI_Ready_to_Run\appRickMortyAPI.exe
 
 ## Requisitos
 
-- Qt 6.8+
+- Qt 6.8+ com MinGW 64-bit
 - CMake 3.16+
-- Compilador compatível com C++17 (MSVC 2022 recomendado)
-- Ninja (opcional, mas recomendado)
+- Ninja
 
 ## Instalação do Qt 6.8 (Windows)
 
@@ -23,68 +22,65 @@ RickMortyAPI_Ready_to_Run\appRickMortyAPI.exe
 
    **https://www.qt.io/download-qt-installer-oss**
 
-2. Execute o instalador e aceite as opções padrão
-
-3. Certifique-se de que os seguintes componentes estão selecionados:
-   - Qt 6.8.x para MSVC 2022 64-bit
-   - Qt SVG
-   - CMake
-   - Ninja
+2. Execute o instalador e selecione os seguintes componentes:
+   - **Qt 6.8.x** > MinGW 64-bit
+   - **Qt 6.8.x** > Qt SVG (Addon)
+   - **Developer and Designer Tools** > CMake
+   - **Developer and Designer Tools** > Ninja
+   - **Developer and Designer Tools** > MinGW 13.x 64-bit
 
 ## Bootstrap (Recomendado)
 
-Após instalar o Qt, use o script de bootstrap para configurar o ambiente, compilar e preparar a aplicação:
+Após instalar o Qt, use o script de bootstrap para compilar e preparar a aplicação:
 
 ```batch
-:: Clique direito > Executar como administrador
 bootstrap.bat
 ```
 
 O bootstrap irá:
-1. Verificar/instalar MSVC Build Tools (se necessário)
-2. Verificar Qt, CMake e Ninja no PATH
-3. Configurar e compilar o projeto em Release
-4. Executar deploy para `install\bin\`
-5. Perguntar se deseja executar a aplicação
+1. Verificar Qt, CMake, Ninja e MinGW no PATH
+2. Configurar e compilar o projeto em Release
+3. Executar deploy para `install\bin\`
+4. Perguntar se deseja executar a aplicação
 
 ## Build Manual
 
 ```bash
-# Configurar
-cmake -B build -S .
+# Configurar (Release)
+cmake -B build/release -S . -G Ninja -DCMAKE_BUILD_TYPE=Release
 
-# Compilar (Debug)
-cmake --build build --config Debug
+# Compilar
+cmake --build build/release
 
-# Compilar (Release)
-cmake --build build --config Release
+# Configurar (Debug)
+cmake -B build/debug -S . -G Ninja -DCMAKE_BUILD_TYPE=Debug
+
+# Compilar
+cmake --build build/debug
 ```
 
 ## Executar
 
 ```bash
 # Windows (Debug)
-.\build\Debug\appRickMortyAPI.exe
+.\build\debug\appRickMortyAPI.exe
 
 # Windows (Release)
-.\build\Release\appRickMortyAPI.exe
+.\build\release\appRickMortyAPI.exe
 ```
 
 ## Deploy (Release)
 
 ```bash
-cmake --build build --config Release --target deploy
+cmake --build build/release --target deploy
 .\install\bin\appRickMortyAPI.exe
 ```
 
 ## Testes
 
 ```bash
-# Executar testes unitários (Release)
-ctest --test-dir build -C Release --output-on-failure
-
-# Executar testes unitários (Debug)
-ctest --test-dir build -C Debug --output-on-failure
+# Executar testes unitários (a partir do diretório de build)
+ctest --test-dir build/release --output-on-failure
 ```
 
 ## Estrutura do Projeto

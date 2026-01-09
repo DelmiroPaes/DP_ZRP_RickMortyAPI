@@ -94,8 +94,8 @@ install(TARGETS appRickMortyAPI
 )
 
 # Deploy target: install + windeployqt
-# Funciona com geradores single-config e multi-config (Visual Studio)
-# Uso: cmake --build build --config Release --target deploy
+# Funciona com geradores single-config (Ninja) e multi-config (Visual Studio)
+# Uso: cmake --build build/release --target deploy
 if(WIN32 AND WINDEPLOYQT_EXECUTABLE)
     set(DEPLOY_DIR "${CMAKE_SOURCE_DIR}/install")
 
