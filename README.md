@@ -46,7 +46,23 @@ setx PATH "%PATH%;C:\Qt\6.8.0\msvc2022_64\bin;C:\Qt\Tools\CMake_64\bin;C:\Qt\Too
 
 Ou configure manualmente em: **Configurações > Sistema > Sobre > Configurações avançadas do sistema > Variáveis de Ambiente**
 
-## Build
+## Bootstrap (Recomendado)
+
+Após instalar o Qt, use o script de bootstrap para configurar o ambiente, compilar e preparar a aplicação:
+
+```batch
+:: Clique direito > Executar como administrador
+bootstrap.bat
+```
+
+O bootstrap irá:
+1. Verificar/instalar MSVC Build Tools (se necessário)
+2. Verificar Qt, CMake e Ninja no PATH
+3. Configurar e compilar o projeto em Release
+4. Executar deploy para `install\bin\`
+5. Perguntar se deseja executar a aplicação
+
+## Build Manual
 
 ```bash
 # Configurar
@@ -63,10 +79,10 @@ cmake --build build --config Release
 
 ```bash
 # Windows (Debug)
-.\build\debug\appRickMortyAPI.exe
+.\build\Debug\appRickMortyAPI.exe
 
 # Windows (Release)
-.\build\release\appRickMortyAPI.exe
+.\build\Release\appRickMortyAPI.exe
 ```
 
 ## Deploy (Release)
@@ -79,8 +95,11 @@ cmake --build build --config Release --target deploy
 ## Testes
 
 ```bash
-# Executar testes unitários
-ctest --test-dir build --output-on-failure
+# Executar testes unitários (Release)
+ctest --test-dir build -C Release --output-on-failure
+
+# Executar testes unitários (Debug)
+ctest --test-dir build -C Debug --output-on-failure
 ```
 
 ## Estrutura do Projeto
@@ -88,6 +107,8 @@ ctest --test-dir build --output-on-failure
 ```
 RickMortyAPI/
 ├── CMakeLists.txt           # Configuração principal do build
+├── bootstrap.bat            # Script de bootstrap (wrapper)
+├── bootstrap.ps1            # Script de bootstrap (PowerShell)
 ├── src/
 │   ├── main.cpp             # Ponto de entrada da aplicação
 │   ├── core/                # Camada de domínio (entidades)
