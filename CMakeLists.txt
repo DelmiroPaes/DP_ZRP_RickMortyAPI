@@ -93,6 +93,25 @@ install(TARGETS appRickMortyAPI
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+# Deploy target: install + windeployqt (Release only)
+if(WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(DEPLOY_DIR "${CMAKE_SOURCE_DIR}/install")
+
+    add_custom_target(deploy
+        COMMAND ${CMAKE_COMMAND} --install ${CMAKE_BINARY_DIR} --prefix ${DEPLOY_DIR}
+        COMMAND ${WINDEPLOYQT_EXECUTABLE}
+            --no-translations
+            --no-system-d3d-compiler
+            --no-opengl-sw
+            --qmldir "${CMAKE_SOURCE_DIR}/qml"
+            --qmldir "${CMAKE_SOURCE_DIR}/modules/RickMortyUI/qml"
+            "${DEPLOY_DIR}/bin/appRickMortyAPI.exe"
+        DEPENDS appRickMortyAPI
+        COMMENT "Deploying application to ${DEPLOY_DIR}..."
+        VERBATIM
+    )
+endif()
+
 # Unit tests
 if(BUILD_TESTING)
     enable_testing()
